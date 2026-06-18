@@ -1,13 +1,39 @@
 @import "tailwindcss";
 
+/* Class-based dark mode — we toggle a "dark" class on the <html> element. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-
 @theme {
-  --color-brand-50: #eff6ff;
+  /* Brand — the primary accent used for buttons, links, active states */
+  --color-brand-50:  #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-400: #60a5fa;
   --color-brand-500: #3b82f6;
   --color-brand-600: #2563eb;
   --color-brand-700: #1d4ed8;
-  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Semantic status colors */
+  --color-success-50:  #ecfdf5;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+
+  --color-danger-50:  #fef2f2;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+
+  --color-warning-500: #f59e0b;
+
+  /* Typography & shape */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --radius-card: 1rem;
+}
+
+/* A couple of base styles applied globally.
+   The "dark" variants make the whole app respond to theme switching. */
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply dark:bg-slate-950 dark:text-slate-100;
+  }
 }

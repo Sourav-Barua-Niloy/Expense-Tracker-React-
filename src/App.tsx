@@ -1,85 +1,50 @@
-import { useState } from 'react'
-import { Button, Card, Input, Select, Badge, Skeleton, Modal } from './components/ui'
-import { Mail, Plus } from 'lucide-react'
+// ─── src/App.tsx (temporary, for Phase 4 testing) ───
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { ProtectedRoute } from './routes/ProtectedRoute'
+import { PublicRoute } from './routes/PublicRoute'
+import { Login } from './pages/Login'
+import { Register } from './pages/Register'
+import { ForgotPassword } from './pages/ForgotPassword'
+import { Button } from './components/ui'
+import { ROUTES } from './constants'
+
+// A throwaway "dashboard" just to confirm protected routes + logout work.
+function TempDashboard() {
+  const { user, logout } = useAuth()
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-950">
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+        Logged in as {user?.displayName || user?.email}
+      </h1>
+      <p className="text-sm text-slate-500">Protected route works. 🎉</p>
+      <Button variant="secondary" onClick={logout}>Log out</Button>
+    </div>
+  )
+}
 
 function App() {
-  const [dark, setDark] = useState(false)
-  const [modalOpen, setModalOpen] = useState(false)
-
-  // toggle the "dark" class on <html> — this is exactly how our real theme will work
-  const toggleDark = () => {
-    setDark((d) => !d)
-    document.documentElement.classList.toggle('dark')
-  }
-
   return (
-    <div className="min-h-screen p-8">
-      <div className="mx-auto max-w-2xl space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">UI Library</h1>
-          <Button variant="secondary" onClick={toggleDark}>
-            {dark ? 'Light' : 'Dark'} mode
-          </Button>
-        </div>
+    <AuthProvider>
+      <BrowserRouter>
+        {/* Toaster renders our react-hot-toast notifications app-wide */}
+        <Toaster position="top-right" />
+        <Routes>
+          {/* Public routes — redirect to dashboard if already logged in */}
+          <Route element={<PublicRoute />}>
+            <Route path={ROUTES.LOGIN} element={<Login />} />
+            <Route path={ROUTES.REGISTER} element={<Register />} />
+            <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
+          </Route>
 
-        <Card>
-          <h2 className="mb-4 font-semibold">Buttons</h2>
-          <div className="flex flex-wrap gap-3">
-            <Button leftIcon={<Plus className="h-4 w-4" />}>Primary</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="danger">Danger</Button>
-            <Button variant="ghost">Ghost</Button>
-            <Button isLoading>Loading</Button>
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="mb-4 font-semibold">Form fields</h2>
-          <div className="space-y-4">
-            <Input label="Email" placeholder="you@example.com" leftIcon={<Mail className="h-4 w-4" />} />
-            <Input label="With error" defaultValue="bad" error="This field is required" />
-            <Select
-              label="Category"
-              placeholder="Select one"
-              options={[
-                { value: 'food', label: 'Food' },
-                { value: 'transport', label: 'Transport' },
-              ]}
-            />
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="mb-4 font-semibold">Badges & Skeleton</h2>
-          <div className="mb-4 flex gap-2">
-            <Badge tone="success">Income</Badge>
-            <Badge tone="danger">Expense</Badge>
-            <Badge tone="brand">Brand</Badge>
-            <Badge tone="neutral">Neutral</Badge>
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </Card>
-
-        <Card hoverable onClick={() => setModalOpen(true)}>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Click this hoverable card to open a modal →
-          </p>
-        </Card>
-
-        <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Example modal">
-          <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-            Press Escape, click the backdrop, or use the buttons below.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button onClick={() => setModalOpen(false)}>Confirm</Button>
-          </div>
-        </Modal>
-      </div>
-    </div>
+          {/* Protected routes — redirect to login if not authenticated */}
+          <Route element={<ProtectedRoute />}>
+            <Route path={ROUTES.DASHBOARD} element={<TempDashboard />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

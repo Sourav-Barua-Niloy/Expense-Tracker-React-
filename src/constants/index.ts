@@ -58,3 +58,10 @@ export const CURRENCY = {
   code: 'USD',
   symbol: '$',
 }
+
+export const NAV_ITEMS = [
+  { label: 'Dashboard',    path: ROUTES.DASHBOARD,    icon: 'LayoutDashboard' },
+  { label: 'Transactions', path: ROUTES.TRANSACTIONS, icon: 'ArrowLeftRight' },
+  { label: 'Analytics',    path: ROUTES.ANALYTICS,    icon: 'PieChart' },
+  { label: 'Profile',      path: ROUTES.PROFILE,      icon: 'UserCircle' },
+] as const

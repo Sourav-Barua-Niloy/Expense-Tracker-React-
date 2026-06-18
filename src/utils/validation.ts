@@ -33,11 +33,13 @@ export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>
 // ─── Transaction form (Phase 6) ───
 export const transactionSchema = z.object({
   title: z.string().min(1, 'Title is required').max(80, 'Title is too long'),
-  // Amount comes from an <input>, which gives a string. We coerce to number
-  // and require it to be positive.
-  amount: z.coerce
-    .number({ invalid_type_error: 'Amount must be a number' })
-    .positive('Amount must be greater than 0'),
+  // Amount comes from an <input>, which gives a string. We accept string or
+  // number, convert with Number(), then require a positive result. This avoids
+  // z.coerce's typing quirks in Zod 4 (which left `amount` inferred as unknown).
+  amount: z
+    .string()
+    .min(1, 'Amount is required')
+    .refine((v) => Number(v) > 0, 'Amount must be greater than 0'),
   type: z.enum(['income', 'expense'], { message: 'Select a type' }),
   category: z
     .string()
@@ -49,3 +51,21 @@ export const transactionSchema = z.object({
   date: z.string().min(1, 'Date is required'),
 })
 export type TransactionFormValues = z.infer<typeof transactionSchema>
+
+// ─── Profile settings (Phase 10) ───
+export const profileSchema = z.object({
+  displayName: z.string().min(2, 'Name must be at least 2 characters'),
+})
+export type ProfileValues = z.infer<typeof profileSchema>
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Enter your current password'),
+    newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your new password'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
+export type ChangePasswordValues = z.infer<typeof changePasswordSchema>

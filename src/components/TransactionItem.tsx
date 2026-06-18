@@ -32,7 +32,7 @@ export function TransactionItem({ transaction, onEdit, onDelete, readOnly }: Tra
           {transaction.title}
         </p>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
-          <Badge tone="neutral">{transaction.category}</Badge>
+          <Badge tone="neutral" className="hidden xs:inline-flex">{transaction.category}</Badge>
           <span>{formatDate(transaction.date)}</span>
         </div>
       </div>

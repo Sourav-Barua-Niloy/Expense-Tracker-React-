@@ -33,7 +33,8 @@
    The "dark" variants make the whole app respond to theme switching. */
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
-    @apply dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-slate-200 text-slate-900 antialiased;
+    @apply dark:bg-slate-950 dark:text-slate-200;
   }
 }
+

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { Mail, Lock } from 'lucide-react'
 import { AuthLayout } from '../components/layout/AuthLayout'
 import { Button, Input } from '../components/ui'
+import { GoogleButton } from '../components/GoogleButton'
 import { useAuth } from '../context/AuthContext'
 import { loginSchema, type LoginValues } from '../utils/validation'
 import { getAuthErrorMessage } from '../services/authService'
@@ -73,6 +74,15 @@ export function Login() {
           Log in
         </Button>
       </form>
+
+      {/* divider */}
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+        <span className="text-xs text-slate-400">or</span>
+        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+      </div>
+
+      <GoogleButton label="Sign in with Google" />
 
       <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         Don't have an account?{' '}

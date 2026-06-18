@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only read/write their OWN profile document.
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // Transactions: a user can only touch documents where the
+    // userId field equals their own uid.
+    match /transactions/{transactionId} {
+      // Reading/deleting: the existing doc must belong to the user.
+      allow read, delete: if request.auth != null
+                          && resource.data.userId == request.auth.uid;
+
+      // Creating: the new doc's userId must be the user's own uid
+      // (stops someone creating transactions "as" another user).
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Updating: must own the existing doc AND not change ownership.
+      allow update: if request.auth != null
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}

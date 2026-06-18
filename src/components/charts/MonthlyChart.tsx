@@ -28,14 +28,9 @@ export function MonthlyChart({ data }: MonthlyChartProps) {
         <YAxis stroke={c.axis} fontSize={12} tickLine={false} axisLine={false}
           tickFormatter={(v) => `${v >= 1000 ? `${v / 1000}k` : v}`} />
         <Tooltip
-          formatter={(value: number) => formatCurrency(value)}
-          contentStyle={{
-            backgroundColor: c.tooltipBg,
-            border: `1px solid ${c.tooltipBorder}`,
-            borderRadius: 12,
-            color: c.tooltipText,
-            fontSize: 13,
-          }}
+          formatter={(value) => formatCurrency(Number(value))}
+          contentStyle={c.tooltipStyle}
+          cursor={c.tooltipCursor}
         />
         <Legend wrapperStyle={{ fontSize: 13 }} />
         <Bar dataKey="income" name="Income" fill={c.income} radius={[6, 6, 0, 0]} maxBarSize={40} />

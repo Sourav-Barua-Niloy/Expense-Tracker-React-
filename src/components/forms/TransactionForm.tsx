@@ -25,10 +25,12 @@ export function TransactionForm({ initial, onSubmit, onCancel }: TransactionForm
   } = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
     // Pre-fill for edit mode, or sensible defaults for add mode.
+    // amount is a STRING here because the schema treats it as a string
+    // (the form input gives strings); we convert to a number on submit.
     defaultValues: initial
       ? {
           title: initial.title,
-          amount: initial.amount,
+          amount: String(initial.amount), // number → string for the input
           type: initial.type,
           category: initial.category,
           note: initial.note,
@@ -36,7 +38,7 @@ export function TransactionForm({ initial, onSubmit, onCancel }: TransactionForm
         }
       : {
           title: '',
-          amount: undefined,
+          amount: '', // empty string, not undefined
           type: 'expense',
           category: '',
           note: '',
@@ -45,10 +47,10 @@ export function TransactionForm({ initial, onSubmit, onCancel }: TransactionForm
   })
 
   const submit = async (values: TransactionFormValues) => {
-    // Convert the form's string date into a real Date for the service.
+    // Convert the form's string fields into the types the service expects.
     const input: TransactionInput = {
       title: values.title,
-      amount: values.amount,
+      amount: Number(values.amount), // string → number for storage
       type: values.type,
       category: values.category,
       note: values.note ?? '',

@@ -13,6 +13,9 @@ import {
   loginUser,
   logoutUser,
   resetPassword,
+  updateUserProfile,
+  changeUserPassword,
+  loginWithGoogle,   // new
 } from '../services/authService'
 
 // What the context provides to consumers.
@@ -23,6 +26,9 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   forgotPassword: (email: string) => Promise<void>
+  updateName: (displayName: string) => Promise<void>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
+  loginWithGoogle: () => Promise<void>   // new
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -44,6 +50,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe
   }, [])
 
+  // Update the display name, then refresh the user object so the UI
+  // (topbar avatar/name) reflects the change immediately. Firebase does NOT
+  // fire onAuthStateChanged for profile-field changes, so we nudge it manually.
+  const updateName = async (displayName: string) => {
+    if (!user) throw new Error('Not authenticated')
+    await updateUserProfile(user, displayName)
+    await user.reload()
+    setUser({ ...auth.currentUser! })
+  }
+
+  // Change the password. The service re-authenticates with the current
+  // password first, since Firebase requires a recent login for this.
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!user) throw new Error('Not authenticated')
+    await changeUserPassword(user, currentPassword, newPassword)
+  }
+
   const value: AuthContextValue = {
     user,
     loading,
@@ -51,6 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login: loginUser,
     logout: logoutUser,
     forgotPassword: resetPassword,
+    updateName,
+    changePassword,
+    loginWithGoogle,   // new
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

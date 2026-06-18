@@ -30,7 +30,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number) => formatCurrency(value)}
+          formatter={(value) => formatCurrency(Number(value))}
           contentStyle={{
             backgroundColor: c.tooltipBg,
             border: `1px solid ${c.tooltipBorder}`,

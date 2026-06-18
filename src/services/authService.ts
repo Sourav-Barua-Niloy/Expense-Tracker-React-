@@ -9,6 +9,8 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  GoogleAuthProvider,      // new
+  signInWithPopup,         // new
   type User as FirebaseUser,
 } from 'firebase/auth'
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
@@ -29,6 +31,10 @@ export function getAuthErrorMessage(code: string): string {
     'auth/invalid-credential': 'Email or password is incorrect.',
     'auth/too-many-requests': 'Too many attempts. Please try again later.',
     'auth/network-request-failed': 'Network error. Check your connection.',
+    // Google popup-specific
+    'auth/popup-closed-by-user': 'Sign-in was cancelled.',
+    'auth/cancelled-popup-request': 'Sign-in was cancelled.',
+    'auth/popup-blocked': 'Popup was blocked. Please allow popups and try again.',
   }
   return map[code] ?? 'Something went wrong. Please try again.'
 }
@@ -60,6 +66,28 @@ export async function registerUser(
 /** Log in with email + password. */
 export async function loginUser(email: string, password: string): Promise<void> {
   await signInWithEmailAndPassword(auth, email, password)
+}
+
+/**
+ * Sign in with Google via a popup. On the user's FIRST Google sign-in there's
+ * no Firestore profile yet, so we create one. On later sign-ins it exists, so
+ * we leave it untouched.
+ */
+export async function loginWithGoogle(): Promise<void> {
+  const provider = new GoogleAuthProvider()
+  const { user } = await signInWithPopup(auth, provider)
+
+  // Create the users/{uid} profile doc only if it doesn't already exist.
+  const ref = doc(db, 'users', user.uid)
+  const existing = await getDoc(ref)
+  if (!existing.exists()) {
+    await setDoc(ref, {
+      displayName: user.displayName ?? '',
+      email: user.email ?? '',
+      photoURL: user.photoURL ?? null, // Google provides a profile photo
+      createdAt: serverTimestamp(),
+    })
+  }
 }
 
 /** Log out the current user. */

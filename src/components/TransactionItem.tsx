@@ -7,11 +7,12 @@ import type { Transaction } from '../types'
 
 interface TransactionItemProps {
   transaction: Transaction
-  onEdit: (t: Transaction) => void
-  onDelete: (t: Transaction) => void
+  onEdit?: (t: Transaction) => void
+  onDelete?: (t: Transaction) => void
+  readOnly?: boolean   // dashboard preview hides the action buttons
 }
 
-export function TransactionItem({ transaction, onEdit, onDelete }: TransactionItemProps) {
+export function TransactionItem({ transaction, onEdit, onDelete, readOnly }: TransactionItemProps) {
   const meta = getCategoryMeta(transaction.category)
   const isIncome = transaction.type === 'income'
 
@@ -41,23 +42,25 @@ export function TransactionItem({ transaction, onEdit, onDelete }: TransactionIt
         {isIncome ? '+' : '−'}{formatCurrency(transaction.amount)}
       </div>
 
-      {/* actions */}
-      <div className="flex shrink-0 gap-1">
-        <button
-          onClick={() => onEdit(transaction)}
-          className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-          aria-label="Edit"
-        >
-          <Pencil className="h-4 w-4" />
-        </button>
-        <button
-          onClick={() => onDelete(transaction)}
-          className="rounded-lg p-2 text-slate-400 hover:bg-danger-50 hover:text-danger-600 dark:hover:bg-danger-500/10"
-          aria-label="Delete"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
+      {/* actions — hidden in read-only mode (e.g. the dashboard preview) */}
+      {!readOnly && (
+        <div className="flex shrink-0 gap-1">
+          <button
+            onClick={() => onEdit?.(transaction)}
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+            aria-label="Edit"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => onDelete?.(transaction)}
+            className="rounded-lg p-2 text-slate-400 hover:bg-danger-50 hover:text-danger-600 dark:hover:bg-danger-500/10"
+            aria-label="Delete"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

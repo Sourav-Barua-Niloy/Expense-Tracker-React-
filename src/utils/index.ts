@@ -2,6 +2,10 @@
 import type { Transaction, Stats } from '../types'
 import { CURRENCY } from '../constants'
 
+// Re-export the robust cn helper (clsx + tailwind-merge) from cn.ts.
+// This replaces the old simple cn that used to live at the bottom of this file.
+export { cn } from './cn'
+
 /**
  * Format a number as currency, e.g. 1234.5 → "$1,234.50".
  * Uses the browser's built-in Intl API, configured from our CURRENCY constant.
@@ -91,12 +95,56 @@ export const groupByCategory = (transactions: Transaction[]) => {
 }
 
 /**
- * Combine Tailwind class strings conditionally.
- * Lets us write: cn('px-4', isActive && 'bg-brand-600')
- * and have falsy values (false/undefined) safely dropped.
- * We'll upgrade this with tailwind-merge in the next step.
+ * Like groupByMonth, but guaranteed sorted oldest → newest, and includes a
+ * running cumulative balance. Used by the trend chart.
+ * Output: [{ month, income, expense, net, cumulative }, ...]
  */
-export const cn = (...classes: (string | false | null | undefined)[]): string =>
-  classes.filter(Boolean).join(' ')
+export const buildMonthlyTrend = (transactions: Transaction[]) => {
+  // group into a map keyed by a sortable "YYYY-MM" plus a display label
+  const map = new Map<string, { label: string; income: number; expense: number }>()
 
+  for (const tx of transactions) {
+    const sortKey = `${tx.date.getFullYear()}-${String(tx.date.getMonth() + 1).padStart(2, '0')}`
+    const label = new Intl.DateTimeFormat(CURRENCY.locale, {
+      month: 'short',
+      year: 'numeric',
+    }).format(tx.date)
 
+    const entry = map.get(sortKey) ?? { label, income: 0, expense: 0 }
+    if (tx.type === 'income') entry.income += tx.amount
+    else entry.expense += tx.amount
+    map.set(sortKey, entry)
+  }
+
+  // sort by the YYYY-MM key, then compute the running cumulative balance
+  const sorted = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
+
+  let cumulative = 0
+  return sorted.map(([, v]) => {
+    const net = v.income - v.expense
+    cumulative += net
+    return {
+      month: v.label,
+      income: v.income,
+      expense: v.expense,
+      net,
+      cumulative,
+    }
+  })
+}
+
+/**
+ * Top spending categories (expenses only), sorted highest → lowest,
+ * with each one's share of total expenses as a percentage.
+ */
+export const topCategories = (transactions: Transaction[]) => {
+  const grouped = groupByCategory(transactions) // reuse Phase 2 helper
+  const total = grouped.reduce((sum, c) => sum + c.value, 0)
+
+  return grouped
+    .map((c) => ({
+      ...c,
+      percent: total > 0 ? (c.value / total) * 100 : 0,
+    }))
+    .sort((a, b) => b.value - a.value)
+}

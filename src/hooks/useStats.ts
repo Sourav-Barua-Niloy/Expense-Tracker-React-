@@ -1,6 +1,12 @@
 // ─── src/hooks/useStats.ts ───
 import { useMemo } from 'react'
-import { calculateStats, groupByMonth, groupByCategory } from '../utils'
+import {
+  calculateStats,
+  groupByMonth,
+  groupByCategory,
+  buildMonthlyTrend,
+  topCategories,
+} from '../utils'
 import type { Transaction } from '../types'
 
 /**
@@ -17,5 +23,9 @@ export function useStats(transactions: Transaction[]) {
   // transactions already arrive newest-first from Firestore.
   const recent = useMemo(() => transactions.slice(0, 6), [transactions])
 
-  return { stats, monthly, byCategory, recent }
+  // Analytics-specific (Phase 8).
+  const trend = useMemo(() => buildMonthlyTrend(transactions), [transactions])
+  const categoryRanking = useMemo(() => topCategories(transactions), [transactions])
+
+  return { stats, monthly, byCategory, recent, trend, categoryRanking }
 }

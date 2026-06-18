@@ -76,7 +76,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         <div className="px-5 py-4 text-xs text-slate-400">
-          Spendly · v1.0
+          Spendly · Sourav Barua · v1.0
         </div>
       </aside>
     </>
